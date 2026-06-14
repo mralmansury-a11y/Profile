@@ -1,0 +1,297 @@
+{% extends "base.html" %}
+{% block content %}
+
+<!-- ═══ HERO ═══ -->
+<section class="hero" id="home">
+    <div class="hero-bg">
+        <div class="grid-lines"></div>
+        <div class="glow-orb glow-1"></div>
+        <div class="glow-orb glow-2"></div>
+    </div>
+    <div class="hero-content">
+        <div class="hero-badge">
+            <span class="badge-dot"></span>
+            متاح للعمل الحر
+        </div>
+        <h1 class="hero-title">
+            <span class="line-1">محمد أحمد رحيل</span>
+            <span class="line-2 typed-text" id="typedText"></span>
+        </h1>
+        <p class="hero-desc">
+            مطور برمجيات متخصص في تطوير تطبيقات الويب والحلول البرمجية المخصصة.
+            خريج هندسة البرمجيات من جامعة بنغازي · دعم فني في دهانات المدينة مصراتة.
+        </p>
+        <div class="hero-cta">
+            <a href="#projects" class="btn-primary">
+                <span>استعرض مشاريعي</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </a>
+            <a href="#contact" class="btn-secondary">تواصل معي</a>
+        </div>
+        <div class="hero-stats">
+            <div class="stat">
+                <span class="stat-num">6+</span>
+                <span class="stat-label">مشروع</span>
+            </div>
+            <div class="stat-div"></div>
+            <div class="stat">
+                <span class="stat-num">2025</span>
+                <span class="stat-label">خريج</span>
+            </div>
+            <div class="stat-div"></div>
+            <div class="stat">
+                <span class="stat-num">Full</span>
+                <span class="stat-label">Stack</span>
+            </div>
+        </div>
+    </div>
+    <div class="hero-visual">
+        <div class="code-window">
+            <div class="window-bar">
+                <span class="dot red"></span>
+                <span class="dot yellow"></span>
+                <span class="dot green"></span>
+                <span class="window-title">portfolio.py</span>
+            </div>
+            <pre class="code-content"><span class="c-keyword">class</span> <span class="c-class">Developer</span>:
+    <span class="c-keyword">def</span> <span class="c-fn">__init__</span>(self):
+        self.name = <span class="c-str">"Mohammed Rahel"</span>
+        self.role = <span class="c-str">"Full Stack Dev"</span>
+        self.location = <span class="c-str">"Libya 🇱🇾"</span>
+        self.skills = [
+            <span class="c-str">"Python Flask"</span>,
+            <span class="c-str">"C# Blazor"</span>,
+            <span class="c-str">"Web Dev"</span>,
+        ]
+
+    <span class="c-keyword">def</span> <span class="c-fn">build</span>(self, idea):
+        <span class="c-keyword">return</span> <span class="c-str">"✅ Shipped!"</span>
+
+<span class="c-comment"># Let's build something great</span>
+me = <span class="c-class">Developer</span>()
+me.build(<span class="c-str">"your idea"</span>) <span class="cursor-blink">▌</span></pre>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ ABOUT ═══ -->
+<section class="about-section" id="about">
+    <div class="container">
+        <div class="section-header">
+            <span class="section-eyebrow">// about_me</span>
+            <h2 class="section-title">من أنا؟</h2>
+        </div>
+        <div class="about-grid">
+            <div class="about-text">
+                <p>مطور برمجيات شغوف بالتقنية، تخرجت من كلية تقنية المعلومات - جامعة بنغازي بتخصص <strong>هندسة البرمجيات</strong> عام 2025.</p>
+                <p>أعمل حالياً في قسم تقنية المعلومات بشركة دهانات المدينة مصراتة كمتخصص دعم فني، وأطور في وقت فراغي مشاريع ويب وتطبيقات سطح المكتب.</p>
+                <p>أتقن تطوير الويب الكامل <strong>Full Stack</strong> من الخادم للواجهة، وأحب حل المشكلات البرمجية المعقدة وتحويل الأفكار إلى منتجات حقيقية.</p>
+                <div class="about-info-grid">
+                    <div class="info-item">
+                        <span class="info-icon">📍</span>
+                        <div>
+                            <span class="info-label">الموقع</span>
+                            <span class="info-value">راس النوف، ليبيا</span>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-icon">🎓</span>
+                        <div>
+                            <span class="info-label">التخصص</span>
+                            <span class="info-value">هندسة البرمجيات</span>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-icon">💼</span>
+                        <div>
+                            <span class="info-label">الوظيفة</span>
+                            <span class="info-value">دعم فني - دهانات المدينة</span>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-icon">📧</span>
+                        <div>
+                            <span class="info-label">البريد</span>
+                            <span class="info-value">mohammed.ahmed.rahel@gmail.com</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="about-side">
+                <div class="terminal-card">
+                    <div class="term-header">
+                        <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+                        <span>terminal</span>
+                    </div>
+                    <div class="term-body">
+                        <div class="term-line"><span class="term-prompt">$</span> whoami</div>
+                        <div class="term-out">Mohammed Ahmed Rahel</div>
+                        <div class="term-line"><span class="term-prompt">$</span> cat education.txt</div>
+                        <div class="term-out">BSc Software Engineering</div>
+                        <div class="term-out">University of Benghazi, 2025</div>
+                        <div class="term-out">GPA: 2.69 (جيد جداً)</div>
+                        <div class="term-line"><span class="term-prompt">$</span> cat languages.txt</div>
+                        <div class="term-out">Arabic: Native ⭐⭐⭐⭐⭐</div>
+                        <div class="term-out">English: Good ⭐⭐⭐⭐</div>
+                        <div class="term-line"><span class="term-prompt">$</span> echo $STATUS</div>
+                        <div class="term-out status-green">Available for freelance ✅</div>
+                        <div class="term-line blink-line"><span class="term-prompt">$</span> <span class="cursor-blink">▌</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ SKILLS ═══ -->
+<section class="skills-section" id="skills">
+    <div class="container">
+        <div class="section-header">
+            <span class="section-eyebrow">// tech_stack</span>
+            <h2 class="section-title">المهارات التقنية</h2>
+        </div>
+        <div class="skills-grid">
+            {% for skill in skills %}
+            <div class="skill-card" data-level="{{ skill.level }}">
+                <div class="skill-top">
+                    <span class="skill-icon">{{ skill.icon }}</span>
+                    <span class="skill-name">{{ skill.name }}</span>
+                    <span class="skill-pct">{{ skill.level }}%</span>
+                </div>
+                <div class="skill-bar">
+                    <div class="skill-fill" style="width: 0%" data-target="{{ skill.level }}"></div>
+                </div>
+                <span class="skill-cat-badge">{{ skill.category }}</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- ═══ PROJECTS ═══ -->
+<section class="projects-section" id="projects">
+    <div class="container">
+        <div class="section-header">
+            <span class="section-eyebrow">// my_projects</span>
+            <h2 class="section-title">المشاريع</h2>
+            <p class="section-sub">اضغط على أي مشروع لعرض التفاصيل الكاملة</p>
+        </div>
+        <div class="filter-tabs">
+            <button class="filter-btn active" data-filter="all">الكل</button>
+            <button class="filter-btn" data-filter="featured">المميزة</button>
+            <button class="filter-btn" data-filter="sale">للبيع</button>
+        </div>
+        <div class="projects-grid" id="projectsGrid">
+            {% for p in projects %}
+            <article class="project-card {% if p.is_featured %}featured{% endif %}" 
+                     data-featured="{{ p.is_featured }}" 
+                     data-sale="{{ p.is_for_sale }}"
+                     onclick="window.location='/project/{{ p.id }}'">
+                <div class="card-header">
+                    <div class="card-icon">
+                        {% if 'Ticket' in p.title %}🎫
+                        {% elif 'Stadium' in p.title or 'Books' in p.title %}🏟️
+                        {% elif 'Coffee' in p.title or 'coffee' in p.title %}☕
+                        {% elif 'Samba' in p.title %}💃
+                        {% else %}💻{% endif %}
+                    </div>
+                    <div class="card-badges">
+                        {% if p.is_featured %}<span class="badge-featured">⭐ مميز</span>{% endif %}
+                        {% if p.is_for_sale %}<span class="badge-sale">للبيع</span>{% endif %}
+                    </div>
+                </div>
+                <div class="card-body">
+                    <h3 class="card-title">{{ p.title }}</h3>
+                    <p class="card-title-ar">{{ p.title_ar }}</p>
+                    <p class="card-desc">{{ p.description_ar[:100] }}...</p>
+                    <div class="card-tech">
+                        {% for tech in p.tech_stack.split(',')[:4] %}
+                        <span class="tech-tag">{{ tech.strip() }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="card-footer">
+                    {% if p.is_for_sale and p.price > 0 %}
+                    <span class="card-price">{{ p.price|int }} د.ل</span>
+                    {% else %}
+                    <span class="card-price free">مجاني / مفتوح</span>
+                    {% endif %}
+                    <span class="card-arrow">عرض التفاصيل ←</span>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- ═══ CONTACT ═══ -->
+<section class="contact-section" id="contact">
+    <div class="container">
+        <div class="section-header">
+            <span class="section-eyebrow">// get_in_touch</span>
+            <h2 class="section-title">تواصل معي</h2>
+            <p class="section-sub">هل لديك فكرة مشروع؟ أنا هنا للمساعدة!</p>
+        </div>
+        <div class="contact-grid">
+            <div class="contact-info">
+                <div class="contact-card">
+                    <span class="contact-icon">📞</span>
+                    <div>
+                        <p class="contact-label">الهاتف</p>
+                        <a href="tel:0920353927" class="contact-val">0920353927</a>
+                    </div>
+                </div>
+                <div class="contact-card">
+                    <span class="contact-icon">📧</span>
+                    <div>
+                        <p class="contact-label">البريد الإلكتروني</p>
+                        <a href="mailto:mohammed.ahmed.rahel@gmail.com" class="contact-val">mohammed.ahmed.rahel@gmail.com</a>
+                    </div>
+                </div>
+                <div class="contact-card">
+                    <span class="contact-icon">📍</span>
+                    <div>
+                        <p class="contact-label">الموقع</p>
+                        <span class="contact-val">راس النوف، ليبيا</span>
+                    </div>
+                </div>
+                <div class="contact-card">
+                    <span class="contact-icon">💻</span>
+                    <div>
+                        <p class="contact-label">GitHub</p>
+                        <a href="https://github.com/mralmansury-a11y" target="_blank" class="contact-val">mralmansury-a11y</a>
+                    </div>
+                </div>
+            </div>
+            <form class="contact-form" id="contactForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>الاسم</label>
+                        <input type="text" name="name" required placeholder="اسمك الكامل">
+                    </div>
+                    <div class="form-group">
+                        <label>البريد الإلكتروني</label>
+                        <input type="email" name="email" required placeholder="email@example.com">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>الموضوع</label>
+                    <input type="text" name="subject" placeholder="موضوع الرسالة">
+                </div>
+                <div class="form-group">
+                    <label>الرسالة</label>
+                    <textarea name="message" rows="5" required placeholder="اكتب رسالتك هنا..."></textarea>
+                </div>
+                <button type="submit" class="btn-primary btn-full">
+                    <span>إرسال الرسالة</span>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+                </button>
+                <div class="form-success" id="formSuccess" style="display:none">
+                    ✅ تم إرسال رسالتك! سأرد عليك قريباً.
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

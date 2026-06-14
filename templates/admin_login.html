@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}لوحة التحكم - تسجيل الدخول{% endblock %}
+{% block content %}
+
+<section class="login-page">
+    <div class="login-card">
+        <div class="login-icon">🔐</div>
+        <h1>لوحة التحكم</h1>
+        <p>محمد رحيل - Portfolio Admin</p>
+        {% if error %}
+        <div class="error-msg">⚠️ {{ error }}</div>
+        {% endif %}
+        <form method="POST">
+            <div class="form-group">
+                <label>كلمة المرور</label>
+                <input type="password" name="password" required placeholder="••••••••" autofocus>
+            </div>
+            <button type="submit" class="btn-primary btn-full">دخول →</button>
+        </form>
+    </div>
+</section>
+
+{% endblock %}

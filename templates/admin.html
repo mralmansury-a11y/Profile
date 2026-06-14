@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+{% block title %}لوحة التحكم{% endblock %}
+{% block content %}
+
+<section class="admin-page">
+    <div class="container">
+        <div class="admin-header">
+            <h1>🛠️ لوحة التحكم</h1>
+            <a href="/admin/logout" class="btn-secondary">خروج</a>
+        </div>
+
+        <!-- Stats -->
+        <div class="admin-stats">
+            <div class="admin-stat-card">
+                <span class="ast-num">{{ stats.projects }}</span>
+                <span class="ast-label">مشروع</span>
+            </div>
+            <div class="admin-stat-card">
+                <span class="ast-num">{{ stats.orders }}</span>
+                <span class="ast-label">طلب</span>
+            </div>
+            <div class="admin-stat-card green">
+                <span class="ast-num">{{ stats.revenue|int }}</span>
+                <span class="ast-label">إيراد (د.ل)</span>
+            </div>
+            <div class="admin-stat-card yellow">
+                <span class="ast-num">{{ stats.messages }}</span>
+                <span class="ast-label">رسائل جديدة</span>
+            </div>
+        </div>
+
+        <!-- Add Project -->
+        <div class="admin-section">
+            <h2>➕ إضافة مشروع جديد</h2>
+            <form method="POST" action="/admin/project/add" class="admin-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>العنوان (English)</label>
+                        <input type="text" name="title" required placeholder="Project Title">
+                    </div>
+                    <div class="form-group">
+                        <label>العنوان (عربي)</label>
+                        <input type="text" name="title_ar" placeholder="عنوان المشروع">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>وصف (English)</label>
+                        <textarea name="description" rows="3" placeholder="Project description..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>وصف (عربي)</label>
+                        <textarea name="description_ar" rows="3" placeholder="وصف المشروع..."></textarea>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>التقنيات (مفصولة بفاصلة)</label>
+                        <input type="text" name="tech_stack" placeholder="Python,Flask,SQLite">
+                    </div>
+                    <div class="form-group">
+                        <label>السعر (د.ل)</label>
+                        <input type="number" name="price" placeholder="0">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>رابط Demo</label>
+                        <input type="url" name="demo_url" placeholder="https://...">
+                    </div>
+                    <div class="form-group">
+                        <label>رابط GitHub</label>
+                        <input type="url" name="github_url" placeholder="https://github.com/...">
+                    </div>
+                </div>
+                <div class="form-row checkboxes">
+                    <label class="check-label">
+                        <input type="checkbox" name="is_for_sale"> للبيع
+                    </label>
+                    <label class="check-label">
+                        <input type="checkbox" name="is_featured"> مميز
+                    </label>
+                </div>
+                <button type="submit" class="btn-primary">إضافة المشروع</button>
+            </form>
+        </div>
+
+        <!-- Projects Table -->
+        <div class="admin-section">
+            <h2>📁 المشاريع ({{ projects|length }})</h2>
+            <div class="admin-table-wrap">
+                <table class="admin-table">
+                    <thead>
+                        <tr><th>العنوان</th><th>السعر</th><th>مميز</th><th>للبيع</th><th>حذف</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for p in projects %}
+                        <tr>
+                            <td><a href="/project/{{ p.id }}">{{ p.title }}</a></td>
+                            <td>{{ p.price|int }} د.ل</td>
+                            <td>{{ '⭐' if p.is_featured else '—' }}</td>
+                            <td>{{ '✅' if p.is_for_sale else '—' }}</td>
+                            <td>
+                                <form method="POST" action="/admin/project/delete/{{ p.id }}" onsubmit="return confirm('حذف المشروع؟')">
+                                    <button type="submit" class="btn-delete">🗑️</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Orders -->
+        <div class="admin-section">
+            <h2>🛒 الطلبات ({{ orders|length }})</h2>
+            <div class="admin-table-wrap">
+                <table class="admin-table">
+                    <thead>
+                        <tr><th>المشروع</th><th>المشتري</th><th>الدفع</th><th>المبلغ</th><th>الحالة</th><th>تاريخ</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for o in orders %}
+                        <tr>
+                            <td>{{ o.title }}</td>
+                            <td>{{ o.buyer_name }}<br><small>{{ o.buyer_email }}</small></td>
+                            <td>{{ o.payment_method }}</td>
+                            <td>{{ o.amount|int }} د.ل</td>
+                            <td>
+                                <select class="status-select" onchange="updateStatus({{ o.id }}, this.value)">
+                                    <option value="pending" {{ 'selected' if o.status=='pending' }}>معلق</option>
+                                    <option value="confirmed" {{ 'selected' if o.status=='confirmed' }}>مؤكد</option>
+                                    <option value="completed" {{ 'selected' if o.status=='completed' }}>مكتمل</option>
+                                    <option value="cancelled" {{ 'selected' if o.status=='cancelled' }}>ملغي</option>
+                                </select>
+                            </td>
+                            <td>{{ o.created_at[:10] }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Messages -->
+        <div class="admin-section">
+            <h2>📩 الرسائل ({{ messages|length }})</h2>
+            <div class="messages-list">
+                {% for m in messages %}
+                <div class="message-item {{ 'unread' if not m.is_read }}">
+                    <div class="msg-header">
+                        <strong>{{ m.name }}</strong>
+                        <span>{{ m.email }}</span>
+                        <small>{{ m.created_at[:16] }}</small>
+                        {% if not m.is_read %}<span class="new-badge">جديد</span>{% endif %}
+                    </div>
+                    {% if m.subject %}<p class="msg-subject">{{ m.subject }}</p>{% endif %}
+                    <p class="msg-body">{{ m.message }}</p>
+                </div>
+                {% endfor %}
+                {% if not messages %}<p class="empty-msg">لا توجد رسائل بعد</p>{% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+function updateStatus(orderId, status) {
+    fetch(`/admin/order/${orderId}/status`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({status})
+    });
+}
+</script>
+{% endblock %}

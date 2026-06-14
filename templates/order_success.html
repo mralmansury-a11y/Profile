@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}تم الطلب بنجاح!{% endblock %}
+{% block content %}
+
+<section class="success-page">
+    <div class="container">
+        <div class="success-card">
+            <div class="success-animation">✅</div>
+            <h1>تم استلام طلبك!</h1>
+            <p>شكراً لثقتك! تم تسجيل طلبك بنجاح لمشروع <strong>{{ project.title }}</strong>.</p>
+            <p>سيتواصل معك المطور خلال <strong>24 ساعة</strong> على البريد الإلكتروني أو الهاتف الذي أدخلته لإتمام عملية الدفع وتسليم المشروع.</p>
+            <div class="success-contact">
+                <p>للاستفسار المباشر:</p>
+                <a href="tel:0920353927" class="btn-primary">📞 0920353927</a>
+                <a href="mailto:mohammed.ahmed.rahel@gmail.com" class="btn-secondary">📧 Email</a>
+            </div>
+            <a href="/" class="back-btn" style="margin-top:2rem;display:inline-block">← العودة للرئيسية</a>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

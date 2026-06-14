@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block title %}{{ project.title }} | محمد رحيل{% endblock %}
+{% block content %}
+
+<section class="project-detail-hero">
+    <div class="container">
+        <a href="/" class="back-btn">← العودة للمشاريع</a>
+        <div class="detail-header">
+            <div class="detail-icon">
+                {% if 'Ticket' in project.title %}🎫
+                {% elif 'Stadium' in project.title or 'Books' in project.title %}🏟️
+                {% elif 'Coffee' in project.title or 'coffee' in project.title %}☕
+                {% elif 'Samba' in project.title %}💃
+                {% else %}💻{% endif %}
+            </div>
+            <div>
+                <div class="detail-badges">
+                    {% if project.is_featured %}<span class="badge-featured">⭐ مميز</span>{% endif %}
+                    {% if project.is_for_sale %}<span class="badge-sale">متاح للبيع</span>{% endif %}
+                </div>
+                <h1 class="detail-title">{{ project.title }}</h1>
+                <p class="detail-title-ar">{{ project.title_ar }}</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="project-detail-body">
+    <div class="container">
+        <div class="detail-grid">
+            <div class="detail-main">
+                <div class="detail-section">
+                    <h2>وصف المشروع</h2>
+                    <p class="detail-desc-ar">{{ project.description_ar }}</p>
+                    <p class="detail-desc-en">{{ project.description }}</p>
+                </div>
+
+                <div class="detail-section">
+                    <h2>التقنيات المستخدمة</h2>
+                    <div class="detail-tech-grid">
+                        {% for tech in project.tech_stack.split(',') %}
+                        <span class="tech-tag-lg">{{ tech.strip() }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="detail-links">
+                    {% if project.demo_url %}
+                    <a href="{{ project.demo_url }}" target="_blank" class="btn-primary">
+                        🔗 عرض المشروع
+                    </a>
+                    {% endif %}
+                    {% if project.github_url %}
+                    <a href="{{ project.github_url }}" target="_blank" class="btn-secondary">
+                        💻 GitHub
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="detail-sidebar">
+                <div class="sidebar-card">
+                    <h3>معلومات المشروع</h3>
+                    <div class="info-row">
+                        <span class="info-k">الفئة</span>
+                        <span class="info-v">{{ project.category }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-k">تاريخ الإضافة</span>
+                        <span class="info-v">{{ project.created_at[:10] if project.created_at else '2025' }}</span>
+                    </div>
+                    {% if project.is_for_sale %}
+                    <div class="info-row">
+                        <span class="info-k">السعر</span>
+                        <span class="info-v price-highlight">{{ project.price|int }} د.ل</span>
+                    </div>
+                    {% endif %}
+                </div>
+
+                {% if project.is_for_sale %}
+                <div class="buy-card">
+                    <div class="buy-price">
+                        <span class="buy-amount">{{ project.price|int }}</span>
+                        <span class="buy-currency">دينار ليبي</span>
+                    </div>
+                    <p class="buy-note">يشمل الكود المصدري الكامل + دعم فني لمدة أسبوعين</p>
+                    <a href="/buy/{{ project.id }}" class="btn-buy">
+                        🛒 اشتري الآن
+                    </a>
+                    <div class="payment-methods">
+                        <span class="pm-label">طرق الدفع:</span>
+                        <span class="pm-tag">💵 كاش</span>
+                        <span class="pm-tag">💳 بطاقة</span>
+                        <span class="pm-tag">📱 تحويل</span>
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="dev-card">
+                    <p class="dev-name">محمد أحمد رحيل</p>
+                    <p class="dev-role">Full Stack Developer</p>
+                    <a href="#" onclick="document.querySelector('#contactSection') && document.querySelector('#contactSection').scrollIntoView()" class="btn-contact-dev">
+                        📩 تواصل مع المطور
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
