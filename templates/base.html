@@ -3,10 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}محمد أحمد رحيل | مطور برمجيات{% endblock %}</title>
+    <title>{% block title %}MRaheel | مطور برمجيات Full Stack{% endblock %}</title>
+    <meta name="description" content="محمد أحمد رحيل (MRaheel) — مطور برمجيات Full Stack من ليبيا. مشاريع Python Flask, C#, تطبيقات ويب متكاملة.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%230B0F14'/%3E%3Ctext x='50' y='66' font-size='52' text-anchor='middle' fill='%235EE6FF' font-family='monospace' font-weight='700'%3EM%3C/text%3E%3C/svg%3E">
     {% block extra_css %}{% endblock %}
 </head>
 <body>
@@ -16,7 +18,7 @@
         <div class="nav-container">
             <a href="/" class="nav-logo">
                 <span class="logo-bracket">&lt;</span>
-                <span class="logo-name">Mohammed</span>
+                <span class="logo-name">MRaheel</span>
                 <span class="logo-bracket">/&gt;</span>
             </a>
             <ul class="nav-links">
@@ -25,7 +27,7 @@
                 <li><a href="/#projects" class="nav-link">المشاريع</a></li>
                 <li><a href="/#contact" class="nav-link">تواصل</a></li>
             </ul>
-            <button class="hamburger" id="hamburger">
+            <button class="hamburger" id="hamburger" aria-label="فتح القائمة">
                 <span></span><span></span><span></span>
             </button>
         </div>
@@ -41,10 +43,10 @@
 
     <footer class="footer">
         <div class="footer-inner">
-            <p class="footer-logo">&lt;Mohammed Rahel /&gt;</p>
-            <p class="footer-copy">© 2025 جميع الحقوق محفوظة · مطور بـ ❤️ في ليبيا</p>
+            <p class="footer-logo">&lt;MRaheel /&gt;</p>
+            <p class="footer-copy">© 2025 جميع الحقوق محفوظة · مطور في ليبيا</p>
             <div class="footer-links">
-                <a href="https://github.com/mralmansury-a11y" target="_blank">GitHub</a>
+                <a href="https://github.com/mralmansury-a11y" target="_blank" rel="noopener">GitHub</a>
                 <a href="mailto:mohammed.ahmed.rahel@gmail.com">Email</a>
             </div>
         </div>
