@@ -1,177 +1,383 @@
-{% extends "base.html" %}
-{% block title %}لوحة التحكم{% endblock %}
-{% block content %}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم · MRaheel</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%230B0F14'/%3E%3Ctext x='50' y='66' font-size='52' text-anchor='middle' fill='%235EE6FF' font-family='monospace' font-weight='700'%3EM%3C/text%3E%3C/svg%3E">
+</head>
+<body class="admin-body">
+<div class="noise-overlay"></div>
 
-<section class="admin-page">
-    <div class="container">
-        <div class="admin-header">
-            <h1>🛠️ لوحة التحكم</h1>
-            <a href="/admin/logout" class="btn-secondary">خروج</a>
-        </div>
+<div class="admin-shell">
 
-        <!-- Stats -->
-        <div class="admin-stats">
-            <div class="admin-stat-card">
-                <span class="ast-num">{{ stats.projects }}</span>
-                <span class="ast-label">مشروع</span>
-            </div>
-            <div class="admin-stat-card">
-                <span class="ast-num">{{ stats.orders }}</span>
-                <span class="ast-label">طلب</span>
-            </div>
-            <div class="admin-stat-card green">
-                <span class="ast-num">{{ stats.revenue|int }}</span>
-                <span class="ast-label">إيراد (د.ل)</span>
-            </div>
-            <div class="admin-stat-card yellow">
-                <span class="ast-num">{{ stats.messages }}</span>
-                <span class="ast-label">رسائل جديدة</span>
-            </div>
-        </div>
+    <div class="sidebar-scrim" id="sidebarScrim"></div>
 
-        <!-- Add Project -->
-        <div class="admin-section">
-            <h2>➕ إضافة مشروع جديد</h2>
-            <form method="POST" action="/admin/project/add" class="admin-form">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>العنوان (English)</label>
-                        <input type="text" name="title" required placeholder="Project Title">
-                    </div>
-                    <div class="form-group">
-                        <label>العنوان (عربي)</label>
-                        <input type="text" name="title_ar" placeholder="عنوان المشروع">
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>وصف (English)</label>
-                        <textarea name="description" rows="3" placeholder="Project description..."></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label>وصف (عربي)</label>
-                        <textarea name="description_ar" rows="3" placeholder="وصف المشروع..."></textarea>
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>التقنيات (مفصولة بفاصلة)</label>
-                        <input type="text" name="tech_stack" placeholder="Python,Flask,SQLite">
-                    </div>
-                    <div class="form-group">
-                        <label>السعر (د.ل)</label>
-                        <input type="number" name="price" placeholder="0">
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>رابط Demo</label>
-                        <input type="url" name="demo_url" placeholder="https://...">
-                    </div>
-                    <div class="form-group">
-                        <label>رابط GitHub</label>
-                        <input type="url" name="github_url" placeholder="https://github.com/...">
-                    </div>
-                </div>
-                <div class="form-row checkboxes">
-                    <label class="check-label">
-                        <input type="checkbox" name="is_for_sale"> للبيع
-                    </label>
-                    <label class="check-label">
-                        <input type="checkbox" name="is_featured"> مميز
-                    </label>
-                </div>
-                <button type="submit" class="btn-primary">إضافة المشروع</button>
-            </form>
-        </div>
-
-        <!-- Projects Table -->
-        <div class="admin-section">
-            <h2>📁 المشاريع ({{ projects|length }})</h2>
-            <div class="admin-table-wrap">
-                <table class="admin-table">
-                    <thead>
-                        <tr><th>العنوان</th><th>السعر</th><th>مميز</th><th>للبيع</th><th>حذف</th></tr>
-                    </thead>
-                    <tbody>
-                        {% for p in projects %}
-                        <tr>
-                            <td><a href="/project/{{ p.id }}">{{ p.title }}</a></td>
-                            <td>{{ p.price|int }} د.ل</td>
-                            <td>{{ '⭐' if p.is_featured else '—' }}</td>
-                            <td>{{ '✅' if p.is_for_sale else '—' }}</td>
-                            <td>
-                                <form method="POST" action="/admin/project/delete/{{ p.id }}" onsubmit="return confirm('حذف المشروع؟')">
-                                    <button type="submit" class="btn-delete">🗑️</button>
-                                </form>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+    <!-- ═══ SIDEBAR ═══ -->
+    <aside class="admin-sidebar" id="adminSidebar">
+        <div class="sidebar-brand">
+            <div class="sidebar-brand-mark">M</div>
+            <div class="sidebar-brand-text">
+                <span class="sidebar-brand-name">MRaheel</span>
+                <span class="sidebar-brand-sub">// admin_console</span>
             </div>
         </div>
 
-        <!-- Orders -->
-        <div class="admin-section">
-            <h2>🛒 الطلبات ({{ orders|length }})</h2>
-            <div class="admin-table-wrap">
-                <table class="admin-table">
-                    <thead>
-                        <tr><th>المشروع</th><th>المشتري</th><th>الدفع</th><th>المبلغ</th><th>الحالة</th><th>تاريخ</th></tr>
-                    </thead>
-                    <tbody>
-                        {% for o in orders %}
-                        <tr>
-                            <td>{{ o.title }}</td>
-                            <td>{{ o.buyer_name }}<br><small>{{ o.buyer_email }}</small></td>
-                            <td>{{ o.payment_method }}</td>
-                            <td>{{ o.amount|int }} د.ل</td>
-                            <td>
-                                <select class="status-select" onchange="updateStatus({{ o.id }}, this.value)">
-                                    <option value="pending" {{ 'selected' if o.status=='pending' }}>معلق</option>
-                                    <option value="confirmed" {{ 'selected' if o.status=='confirmed' }}>مؤكد</option>
-                                    <option value="completed" {{ 'selected' if o.status=='completed' }}>مكتمل</option>
-                                    <option value="cancelled" {{ 'selected' if o.status=='cancelled' }}>ملغي</option>
-                                </select>
-                            </td>
-                            <td>{{ o.created_at[:10] }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+        <nav class="sidebar-nav">
+            <div class="sidebar-section-label">01_عرض عام</div>
+            <button class="sidebar-link active" data-page="overview">
+                <span class="sidebar-link-icon">📊</span> نظرة عامة
+                <span class="sidebar-link-tag">home</span>
+            </button>
+
+            <div class="sidebar-section-label">02_المحتوى</div>
+            <button class="sidebar-link" data-page="projects">
+                <span class="sidebar-link-icon">📁</span> المشاريع
+            </button>
+            <button class="sidebar-link" data-page="skills">
+                <span class="sidebar-link-icon">🧩</span> المهارات
+            </button>
+
+            <div class="sidebar-section-label">03_العمليات</div>
+            <button class="sidebar-link" data-page="orders">
+                <span class="sidebar-link-icon">🛒</span> الطلبات
+                <span class="sidebar-link-badge" id="navOrdersBadge" style="display:none">0</span>
+            </button>
+            <button class="sidebar-link" data-page="messages">
+                <span class="sidebar-link-icon">📩</span> الرسائل
+                <span class="sidebar-link-badge" id="navMessagesBadge" style="display:none">0</span>
+            </button>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="sidebar-status">
+                <span class="badge-dot"></span> النظام يعمل بشكل طبيعي
+            </div>
+            <a href="/admin/logout" class="sidebar-logout">⏻ تسجيل الخروج</a>
+        </div>
+    </aside>
+
+    <!-- ═══ MAIN ═══ -->
+    <div class="admin-main">
+        <header class="admin-topbar">
+            <button class="topbar-menu-btn" id="topbarMenuBtn" aria-label="فتح القائمة">☰</button>
+            <div class="topbar-title-wrap">
+                <span class="topbar-title" id="topbarTitle">نظرة عامة</span>
+                <span class="topbar-crumb" id="topbarCrumb">admin / overview</span>
+            </div>
+            <div class="topbar-search">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+                <input type="text" id="globalSearch" placeholder="بحث سريع...">
+            </div>
+            <div class="topbar-avatar" title="محمد أحمد رحيل">M</div>
+        </header>
+
+        <main class="admin-content">
+
+            <!-- ═══ OVERVIEW ═══ -->
+            <section class="admin-page-section active" id="page-overview">
+                <div class="page-heading">
+                    <div>
+                        <h1>أهلاً بك، محمد 👋</h1>
+                        <p>هذا ملخص نشاط موقعك اليوم</p>
+                    </div>
+                </div>
+
+                <div class="kpi-grid" id="kpiGrid">
+                    <!-- filled by JS -->
+                </div>
+
+                <div class="charts-row">
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h3>الإيرادات — آخر 14 يوم</h3>
+                            <span id="revenueRangeLabel"></span>
+                        </div>
+                        <div class="chart-svg-wrap" id="revenueChart"></div>
+                    </div>
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h3>حالة الطلبات</h3>
+                        </div>
+                        <div class="chart-svg-wrap" id="statusDonut"></div>
+                        <div class="donut-legend" id="statusLegend"></div>
+                    </div>
+                </div>
+
+                <div class="activity-row">
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h3>أحدث الطلبات</h3>
+                            <a href="#" class="panel-link" data-goto="orders">عرض الكل ←</a>
+                        </div>
+                        <div class="activity-list" id="recentOrdersList"></div>
+                    </div>
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h3>أحدث الرسائل</h3>
+                            <a href="#" class="panel-link" data-goto="messages">عرض الكل ←</a>
+                        </div>
+                        <div class="activity-list" id="recentMessagesList"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ═══ PROJECTS ═══ -->
+            <section class="admin-page-section" id="page-projects">
+                <div class="page-heading">
+                    <div>
+                        <h1>المشاريع</h1>
+                        <p>أضف وحرر وأدر مشاريعك المعروضة في الموقع</p>
+                    </div>
+                </div>
+
+                <div class="toolbar">
+                    <div class="toolbar-search">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+                        <input type="text" id="projectSearch" placeholder="بحث في المشاريع...">
+                    </div>
+                    <div class="toolbar-chip-group" id="projectFilterChips">
+                        <button class="toolbar-chip active" data-filter="all">الكل</button>
+                        <button class="toolbar-chip" data-filter="featured">مميز</button>
+                        <button class="toolbar-chip" data-filter="sale">للبيع</button>
+                    </div>
+                    <div class="toolbar-spacer"></div>
+                    <button class="btn-add" id="addProjectBtn">+ مشروع جديد</button>
+                </div>
+
+                <div class="data-panel">
+                    <div class="data-table-wrap">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>المشروع</th>
+                                    <th>الفئة</th>
+                                    <th>السعر</th>
+                                    <th>الحالة</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="projectsTableBody"></tbody>
+                        </table>
+                    </div>
+                    <div class="empty-state" id="projectsEmpty" style="display:none">
+                        <span class="empty-icon">📁</span>
+                        <p>لا توجد مشاريع مطابقة</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ═══ SKILLS ═══ -->
+            <section class="admin-page-section" id="page-skills">
+                <div class="page-heading">
+                    <div>
+                        <h1>المهارات</h1>
+                        <p>اضبط مستوى كل مهارة كما تظهر في الصفحة الرئيسية</p>
+                    </div>
+                    <button class="btn-add" id="addSkillBtn">+ مهارة جديدة</button>
+                </div>
+                <div class="admin-skills-grid" id="skillsGrid"></div>
+            </section>
+
+            <!-- ═══ ORDERS ═══ -->
+            <section class="admin-page-section" id="page-orders">
+                <div class="page-heading">
+                    <div>
+                        <h1>الطلبات</h1>
+                        <p>تابع طلبات الشراء وحدّث حالتها</p>
+                    </div>
+                </div>
+
+                <div class="toolbar">
+                    <div class="toolbar-search">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+                        <input type="text" id="orderSearch" placeholder="بحث بالاسم أو المشروع...">
+                    </div>
+                    <div class="toolbar-chip-group" id="orderFilterChips">
+                        <button class="toolbar-chip active" data-filter="all">الكل</button>
+                        <button class="toolbar-chip" data-filter="pending">معلق</button>
+                        <button class="toolbar-chip" data-filter="confirmed">مؤكد</button>
+                        <button class="toolbar-chip" data-filter="completed">مكتمل</button>
+                        <button class="toolbar-chip" data-filter="cancelled">ملغي</button>
+                    </div>
+                </div>
+
+                <div class="data-panel">
+                    <div class="data-table-wrap">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>المشروع</th>
+                                    <th>المشتري</th>
+                                    <th>الدفع</th>
+                                    <th>المبلغ</th>
+                                    <th>الحالة</th>
+                                    <th>التاريخ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ordersTableBody"></tbody>
+                        </table>
+                    </div>
+                    <div class="empty-state" id="ordersEmpty" style="display:none">
+                        <span class="empty-icon">🛒</span>
+                        <p>لا توجد طلبات مطابقة</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ═══ MESSAGES ═══ -->
+            <section class="admin-page-section" id="page-messages">
+                <div class="page-heading">
+                    <div>
+                        <h1>الرسائل</h1>
+                        <p>رسائل التواصل المرسلة من الموقع</p>
+                    </div>
+                </div>
+                <div class="toolbar">
+                    <div class="toolbar-chip-group" id="msgFilterChips">
+                        <button class="toolbar-chip active" data-filter="all">الكل</button>
+                        <button class="toolbar-chip" data-filter="unread">غير مقروءة</button>
+                    </div>
+                </div>
+                <div class="messages-grid" id="messagesGrid"></div>
+                <div class="empty-state" id="messagesEmpty" style="display:none">
+                    <span class="empty-icon">📩</span>
+                    <p>لا توجد رسائل</p>
+                </div>
+            </section>
+
+        </main>
+    </div>
+</div>
+
+<!-- ═══ PROJECT MODAL ═══ -->
+<div class="modal-overlay" id="projectModal">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3 id="projectModalTitle">مشروع جديد</h3>
+            <button class="modal-close" data-close="projectModal">✕</button>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="pf_id">
+            <div class="field-row">
+                <div class="field-group">
+                    <label>العنوان (English)</label>
+                    <input type="text" id="pf_title" placeholder="Project Title">
+                </div>
+                <div class="field-group">
+                    <label>العنوان (عربي)</label>
+                    <input type="text" id="pf_title_ar" placeholder="عنوان المشروع">
+                </div>
+            </div>
+            <div class="field-row">
+                <div class="field-group">
+                    <label>وصف (English)</label>
+                    <textarea id="pf_description" placeholder="Project description..."></textarea>
+                </div>
+                <div class="field-group">
+                    <label>وصف (عربي)</label>
+                    <textarea id="pf_description_ar" placeholder="وصف المشروع..."></textarea>
+                </div>
+            </div>
+            <div class="field-row">
+                <div class="field-group">
+                    <label>التقنيات (مفصولة بفاصلة)</label>
+                    <input type="text" id="pf_tech_stack" placeholder="Python,Flask,SQLite">
+                </div>
+                <div class="field-group">
+                    <label>السعر (د.ل)</label>
+                    <input type="number" id="pf_price" placeholder="0">
+                </div>
+            </div>
+            <div class="field-row">
+                <div class="field-group">
+                    <label>رابط Demo</label>
+                    <input type="url" id="pf_demo_url" placeholder="https://...">
+                </div>
+                <div class="field-group">
+                    <label>رابط GitHub</label>
+                    <input type="url" id="pf_github_url" placeholder="https://github.com/...">
+                </div>
+            </div>
+            <div class="field-group">
+                <label>الفئة</label>
+                <select id="pf_category">
+                    <option value="web">Web</option>
+                    <option value="desktop">Desktop</option>
+                    <option value="mobile">Mobile</option>
+                    <option value="design">Design</option>
+                </select>
+            </div>
+            <div class="field-checks">
+                <label class="field-check-label"><input type="checkbox" id="pf_is_for_sale"> للبيع</label>
+                <label class="field-check-label"><input type="checkbox" id="pf_is_featured"> مميز</label>
             </div>
         </div>
-
-        <!-- Messages -->
-        <div class="admin-section">
-            <h2>📩 الرسائل ({{ messages|length }})</h2>
-            <div class="messages-list">
-                {% for m in messages %}
-                <div class="message-item {{ 'unread' if not m.is_read }}">
-                    <div class="msg-header">
-                        <strong>{{ m.name }}</strong>
-                        <span>{{ m.email }}</span>
-                        <small>{{ m.created_at[:16] }}</small>
-                        {% if not m.is_read %}<span class="new-badge">جديد</span>{% endif %}
-                    </div>
-                    {% if m.subject %}<p class="msg-subject">{{ m.subject }}</p>{% endif %}
-                    <p class="msg-body">{{ m.message }}</p>
-                </div>
-                {% endfor %}
-                {% if not messages %}<p class="empty-msg">لا توجد رسائل بعد</p>{% endif %}
-            </div>
+        <div class="modal-footer">
+            <button class="btn-modal-secondary" data-close="projectModal">إلغاء</button>
+            <button class="btn-modal-primary" id="saveProjectBtn">حفظ المشروع</button>
         </div>
     </div>
-</section>
+</div>
 
-<script>
-function updateStatus(orderId, status) {
-    fetch(`/admin/order/${orderId}/status`, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({status})
-    });
-}
-</script>
-{% endblock %}
+<!-- ═══ SKILL MODAL ═══ -->
+<div class="modal-overlay" id="skillModal">
+    <div class="modal-box" style="max-width:420px">
+        <div class="modal-header">
+            <h3>مهارة جديدة</h3>
+            <button class="modal-close" data-close="skillModal">✕</button>
+        </div>
+        <div class="modal-body">
+            <div class="field-group">
+                <label>الأيقونة (إيموجي)</label>
+                <input type="text" id="sf_icon" placeholder="⭐" maxlength="4">
+            </div>
+            <div class="field-group">
+                <label>اسم المهارة</label>
+                <input type="text" id="sf_name" placeholder="Python / Flask">
+            </div>
+            <div class="field-group">
+                <label>الفئة</label>
+                <input type="text" id="sf_category" placeholder="backend">
+            </div>
+            <div class="field-group">
+                <label>المستوى</label>
+                <div class="admin-skill-level-row">
+                    <input type="range" id="sf_level" min="0" max="100" value="80">
+                    <span id="sf_level_label">80%</span>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-modal-secondary" data-close="skillModal">إلغاء</button>
+            <button class="btn-modal-primary" id="saveSkillBtn">إضافة</button>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ CONFIRM DELETE MODAL ═══ -->
+<div class="modal-overlay" id="confirmModal">
+    <div class="modal-box" style="max-width:380px">
+        <div class="modal-header">
+            <h3 id="confirmTitle">تأكيد الحذف</h3>
+            <button class="modal-close" data-close="confirmModal">✕</button>
+        </div>
+        <div class="modal-body">
+            <p id="confirmText" style="color:var(--text2);font-size:0.9rem;line-height:1.7"></p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-modal-secondary" data-close="confirmModal">إلغاء</button>
+            <button class="btn-modal-danger" id="confirmActionBtn">حذف</button>
+        </div>
+    </div>
+</div>
+
+<div class="toast-stack" id="toastStack"></div>
+
+<script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+</body>
+</html>
