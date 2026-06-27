@@ -1,13 +1,24 @@
-from flask import Flask, render_template, request, jsonify, redirect, url_for, session, flash
+from flask import Flask, render_template, request, jsonify, redirect, url_for, session
 import sqlite3
 import os
-from datetime import datetime
-import json
+from datetime import datetime, timedelta
 
 app = Flask(__name__)
-app.secret_key = 'mohammed-portfolio-secret-2025'
+app.secret_key = 'mraheel-portfolio-secret-2025'
 
 DB_PATH = os.path.join(os.path.dirname(__file__), 'instance', 'portfolio.db')
+
+# ─── Site identity (single source of truth) ──────────────────────
+SITE = {
+    'name': 'MRaheel',
+    'full_name_ar': 'محمد أحمد رحيل',
+    'full_name_en': 'Mohammed Ahmed Raheel',
+    'role_ar': 'مطور برمجيات Full Stack',
+    'email': 'mohammed.ahmed.rahel@gmail.com',
+    'phone': '0920353927',
+    'github': 'https://github.com/mralmansury-a11y',
+    'location_ar': 'مصراتة، ليبيا',
+}
 
 
 def get_db():
@@ -69,7 +80,7 @@ def init_db():
         icon TEXT
     )''')
 
-    # Seed data
+    # Seed data (only runs on a fresh/empty database)
     c.execute("SELECT COUNT(*) FROM projects")
     if c.fetchone()[0] == 0:
         projects = [
@@ -116,7 +127,7 @@ def init_db():
              'https://github.com/mralmansury-a11y/samba',
              200, 1, 0),
         ]
-        c.executemany('''INSERT INTO projects 
+        c.executemany('''INSERT INTO projects
             (title, title_ar, description, description_ar, tech_stack, category, image_url, demo_url, github_url, price, is_for_sale, is_featured)
             VALUES (?,?,?,?,?,?,?,?,?,?,?,?)''', projects)
 
@@ -136,6 +147,11 @@ def init_db():
 
     conn.commit()
     conn.close()
+
+
+@app.context_processor
+def inject_site():
+    return {'site': SITE}
 
 
 # ─── Public Routes ───────────────────────────────────────────────
@@ -171,8 +187,8 @@ def buy_project(pid):
         data = request.form
         conn.execute('''INSERT INTO orders (project_id, buyer_name, buyer_email, buyer_phone, payment_method, amount, notes)
             VALUES (?,?,?,?,?,?,?)''',
-            (pid, data['name'], data['email'], data.get('phone',''),
-             data.get('payment_method','cash'), project['price'], data.get('notes','')))
+            (pid, data['name'], data['email'], data.get('phone', ''),
+             data.get('payment_method', 'cash'), project['price'], data.get('notes', '')))
         conn.commit()
         conn.close()
         return render_template('order_success.html', project=project)
@@ -186,34 +202,19 @@ def contact():
     data = request.form
     conn = get_db()
     conn.execute('INSERT INTO messages (name, email, subject, message) VALUES (?,?,?,?)',
-        (data['name'], data['email'], data.get('subject',''), data['message']))
+        (data['name'], data['email'], data.get('subject', ''), data['message']))
     conn.commit()
     conn.close()
     return jsonify({'success': True, 'message': 'تم إرسال رسالتك بنجاح! سأتواصل معك قريباً.'})
 
 
-# ─── Admin Routes ─────────────────────────────────────────────────
+# ─── Admin Auth ───────────────────────────────────────────────────
 
 ADMIN_PASS = 'admin123'
 
 
-@app.route('/admin')
-def admin():
-    if not session.get('admin'):
-        return redirect(url_for('admin_login'))
-    conn = get_db()
-    projects = conn.execute('SELECT * FROM projects ORDER BY created_at DESC').fetchall()
-    orders = conn.execute('''SELECT o.*, p.title FROM orders o 
-        JOIN projects p ON o.project_id=p.id ORDER BY o.created_at DESC''').fetchall()
-    messages = conn.execute('SELECT * FROM messages ORDER BY created_at DESC').fetchall()
-    stats = {
-        'projects': conn.execute('SELECT COUNT(*) FROM projects').fetchone()[0],
-        'orders': conn.execute('SELECT COUNT(*) FROM orders').fetchone()[0],
-        'revenue': conn.execute("SELECT SUM(amount) FROM orders WHERE status='completed'").fetchone()[0] or 0,
-        'messages': conn.execute('SELECT COUNT(*) FROM messages WHERE is_read=0').fetchone()[0],
-    }
-    conn.close()
-    return render_template('admin.html', projects=projects, orders=orders, messages=messages, stats=stats)
+def admin_required():
+    return session.get('admin') is True
 
 
 @app.route('/admin/login', methods=['GET', 'POST'])
@@ -232,11 +233,128 @@ def admin_logout():
     return redirect(url_for('index'))
 
 
-@app.route('/admin/order/<int:oid>/status', methods=['POST'])
-def update_order(oid):
-    if not session.get('admin'):
+# ─── Admin Dashboard (shell + JSON API consumed by JS) ────────────
+
+@app.route('/admin')
+def admin():
+    if not admin_required():
+        return redirect(url_for('admin_login'))
+    return render_template('admin.html')
+
+
+def _stats(conn):
+    revenue = conn.execute("SELECT SUM(amount) FROM orders WHERE status='completed'").fetchone()[0] or 0
+    pending_revenue = conn.execute("SELECT SUM(amount) FROM orders WHERE status IN ('pending','confirmed')").fetchone()[0] or 0
+    return {
+        'projects': conn.execute('SELECT COUNT(*) FROM projects').fetchone()[0],
+        'for_sale': conn.execute('SELECT COUNT(*) FROM projects WHERE is_for_sale=1').fetchone()[0],
+        'orders': conn.execute('SELECT COUNT(*) FROM orders').fetchone()[0],
+        'orders_pending': conn.execute("SELECT COUNT(*) FROM orders WHERE status='pending'").fetchone()[0],
+        'revenue': revenue,
+        'pending_revenue': pending_revenue,
+        'messages': conn.execute('SELECT COUNT(*) FROM messages').fetchone()[0],
+        'messages_unread': conn.execute('SELECT COUNT(*) FROM messages WHERE is_read=0').fetchone()[0],
+    }
+
+
+def _revenue_series(conn, days=14):
+    """Daily completed-order revenue for the trailing `days` days."""
+    rows = conn.execute('''SELECT date(created_at) d, SUM(amount) total
+        FROM orders WHERE status='completed'
+        GROUP BY date(created_at)''').fetchall()
+    by_day = {r['d']: r['total'] for r in rows}
+    today = datetime.utcnow().date()
+    series = []
+    for i in range(days - 1, -1, -1):
+        day = today - timedelta(days=i)
+        key = day.isoformat()
+        series.append({'date': key, 'total': by_day.get(key, 0) or 0})
+    return series
+
+
+@app.route('/admin/api/overview')
+def admin_api_overview():
+    if not admin_required():
         return jsonify({'error': 'unauthorized'}), 401
-    status = request.json.get('status')
+    conn = get_db()
+    data = {
+        'stats': _stats(conn),
+        'revenue_series': _revenue_series(conn),
+        'recent_orders': [dict(r) for r in conn.execute(
+            '''SELECT o.*, p.title FROM orders o JOIN projects p ON o.project_id=p.id
+               ORDER BY o.created_at DESC LIMIT 5''').fetchall()],
+        'recent_messages': [dict(r) for r in conn.execute(
+            'SELECT * FROM messages ORDER BY created_at DESC LIMIT 5').fetchall()],
+    }
+    conn.close()
+    return jsonify(data)
+
+
+@app.route('/admin/api/projects', methods=['GET', 'POST'])
+def admin_api_projects():
+    if not admin_required():
+        return jsonify({'error': 'unauthorized'}), 401
+    conn = get_db()
+    if request.method == 'POST':
+        d = request.get_json(force=True)
+        conn.execute('''INSERT INTO projects (title, title_ar, description, description_ar, tech_stack,
+            category, demo_url, github_url, price, is_for_sale, is_featured)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?)''',
+            (d.get('title', ''), d.get('title_ar', ''), d.get('description', ''), d.get('description_ar', ''),
+             d.get('tech_stack', ''), d.get('category', 'web'), d.get('demo_url', ''),
+             d.get('github_url', ''), float(d.get('price') or 0),
+             1 if d.get('is_for_sale') else 0, 1 if d.get('is_featured') else 0))
+        conn.commit()
+        new_id = conn.execute('SELECT last_insert_rowid()').fetchone()[0]
+        row = conn.execute('SELECT * FROM projects WHERE id=?', (new_id,)).fetchone()
+        conn.close()
+        return jsonify({'success': True, 'project': dict(row)})
+    projects = [dict(r) for r in conn.execute('SELECT * FROM projects ORDER BY created_at DESC').fetchall()]
+    conn.close()
+    return jsonify({'projects': projects})
+
+
+@app.route('/admin/api/projects/<int:pid>', methods=['PUT', 'DELETE'])
+def admin_api_project_detail(pid):
+    if not admin_required():
+        return jsonify({'error': 'unauthorized'}), 401
+    conn = get_db()
+    if request.method == 'DELETE':
+        conn.execute('DELETE FROM projects WHERE id=?', (pid,))
+        conn.commit()
+        conn.close()
+        return jsonify({'success': True})
+
+    d = request.get_json(force=True)
+    fields = ['title', 'title_ar', 'description', 'description_ar', 'tech_stack',
+              'category', 'demo_url', 'github_url']
+    sets = ', '.join(f'{f}=?' for f in fields)
+    values = [d.get(f, '') for f in fields]
+    values += [float(d.get('price') or 0), 1 if d.get('is_for_sale') else 0, 1 if d.get('is_featured') else 0, pid]
+    conn.execute(f'UPDATE projects SET {sets}, price=?, is_for_sale=?, is_featured=? WHERE id=?', values)
+    conn.commit()
+    row = conn.execute('SELECT * FROM projects WHERE id=?', (pid,)).fetchone()
+    conn.close()
+    return jsonify({'success': True, 'project': dict(row) if row else None})
+
+
+@app.route('/admin/api/orders')
+def admin_api_orders():
+    if not admin_required():
+        return jsonify({'error': 'unauthorized'}), 401
+    conn = get_db()
+    orders = [dict(r) for r in conn.execute(
+        '''SELECT o.*, p.title FROM orders o JOIN projects p ON o.project_id=p.id
+           ORDER BY o.created_at DESC''').fetchall()]
+    conn.close()
+    return jsonify({'orders': orders})
+
+
+@app.route('/admin/api/orders/<int:oid>', methods=['PUT'])
+def admin_api_update_order(oid):
+    if not admin_required():
+        return jsonify({'error': 'unauthorized'}), 401
+    status = request.get_json(force=True).get('status')
     conn = get_db()
     conn.execute('UPDATE orders SET status=? WHERE id=?', (status, oid))
     conn.commit()
@@ -244,36 +362,69 @@ def update_order(oid):
     return jsonify({'success': True})
 
 
-@app.route('/admin/project/add', methods=['POST'])
-def add_project():
-    if not session.get('admin'):
-        return jsonify({'error': 'unauthorized'}), 401
-    d = request.form
-    conn = get_db()
-    conn.execute('''INSERT INTO projects (title, title_ar, description, description_ar, tech_stack,
-        category, demo_url, github_url, price, is_for_sale, is_featured)
-        VALUES (?,?,?,?,?,?,?,?,?,?,?)''',
-        (d['title'], d.get('title_ar',''), d.get('description',''), d.get('description_ar',''),
-         d.get('tech_stack',''), d.get('category','web'), d.get('demo_url',''),
-         d.get('github_url',''), float(d.get('price',0)),
-         1 if d.get('is_for_sale') else 0, 1 if d.get('is_featured') else 0))
-    conn.commit()
-    conn.close()
-    return redirect(url_for('admin'))
-
-
-@app.route('/admin/project/delete/<int:pid>', methods=['POST'])
-def delete_project(pid):
-    if not session.get('admin'):
+@app.route('/admin/api/messages')
+def admin_api_messages():
+    if not admin_required():
         return jsonify({'error': 'unauthorized'}), 401
     conn = get_db()
-    conn.execute('DELETE FROM projects WHERE id=?', (pid,))
+    messages = [dict(r) for r in conn.execute('SELECT * FROM messages ORDER BY created_at DESC').fetchall()]
+    conn.close()
+    return jsonify({'messages': messages})
+
+
+@app.route('/admin/api/messages/<int:mid>', methods=['PUT', 'DELETE'])
+def admin_api_message_detail(mid):
+    if not admin_required():
+        return jsonify({'error': 'unauthorized'}), 401
+    conn = get_db()
+    if request.method == 'DELETE':
+        conn.execute('DELETE FROM messages WHERE id=?', (mid,))
+        conn.commit()
+        conn.close()
+        return jsonify({'success': True})
+    is_read = request.get_json(force=True).get('is_read', 1)
+    conn.execute('UPDATE messages SET is_read=? WHERE id=?', (1 if is_read else 0, mid))
     conn.commit()
     conn.close()
-    return redirect(url_for('admin'))
+    return jsonify({'success': True})
+
+
+@app.route('/admin/api/skills', methods=['GET', 'POST'])
+def admin_api_skills():
+    if not admin_required():
+        return jsonify({'error': 'unauthorized'}), 401
+    conn = get_db()
+    if request.method == 'POST':
+        d = request.get_json(force=True)
+        conn.execute('INSERT INTO skills (name, category, level, icon) VALUES (?,?,?,?)',
+            (d.get('name', ''), d.get('category', ''), int(d.get('level') or 80), d.get('icon', '⭐')))
+        conn.commit()
+        conn.close()
+        return jsonify({'success': True})
+    skills = [dict(r) for r in conn.execute('SELECT * FROM skills ORDER BY level DESC').fetchall()]
+    conn.close()
+    return jsonify({'skills': skills})
+
+
+@app.route('/admin/api/skills/<int:sid>', methods=['PUT', 'DELETE'])
+def admin_api_skill_detail(sid):
+    if not admin_required():
+        return jsonify({'error': 'unauthorized'}), 401
+    conn = get_db()
+    if request.method == 'DELETE':
+        conn.execute('DELETE FROM skills WHERE id=?', (sid,))
+        conn.commit()
+        conn.close()
+        return jsonify({'success': True})
+    d = request.get_json(force=True)
+    conn.execute('UPDATE skills SET name=?, category=?, level=?, icon=? WHERE id=?',
+        (d.get('name', ''), d.get('category', ''), int(d.get('level') or 80), d.get('icon', '⭐'), sid))
+    conn.commit()
+    conn.close()
+    return jsonify({'success': True})
 
 
 if __name__ == '__main__':
-    os.makedirs('instance', exist_ok=True)
+    os.makedirs(os.path.join(os.path.dirname(__file__), 'instance'), exist_ok=True)
     init_db()
     app.run(debug=True, port=5000)
